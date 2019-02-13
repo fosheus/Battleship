@@ -58,9 +58,13 @@ void ConcaveShape::CreateTriangle(unsigned int a, unsigned int b, unsigned int c
 {
 	if ((a < points.size()) && (b < points.size()) && (c < points.size())) {
 		triangles.push_back(sf::VertexArray(sf::Triangles, 3));
-		triangles.back()[0].position = sf::Vector2f(points[a].x+getPosition().x, points[a].y + getPosition().y);
+		/*triangles.back()[0].position = sf::Vector2f(points[a].x+getPosition().x, points[a].y + getPosition().y);
 		triangles.back()[1].position = sf::Vector2f(points[b].x + getPosition().x, points[b].y + getPosition().y);
 		triangles.back()[2].position = sf::Vector2f(points[c].x + getPosition().x, points[c].y + getPosition().y);
+		*/
+		triangles.back()[0].position = points[a];
+		triangles.back()[1].position = points[b];
+		triangles.back()[2].position = points[c];
 		//-----------------------------------//
 		triangles.back()[0].color = color;
 		triangles.back()[1].color = color;
@@ -75,8 +79,8 @@ void ConcaveShape::CreateTriangle(unsigned int a, unsigned int b, unsigned int c
 void ConcaveShape::TriangulateInner(unsigned int n, std::vector<unsigned int>& p)
 {
 	register unsigned int next = 0, next2 = 0, start = 0, check = 0;
+Label:
 	while ((p.size() > 3) && (check < (2 * p.size()))) {
-	Label:
 		start++;
 		check++;
 		//-----------------------------------//
@@ -89,7 +93,8 @@ void ConcaveShape::TriangulateInner(unsigned int n, std::vector<unsigned int>& p
 		sf::Vector2f b = points[p[next]];
 		sf::Vector2f c = points[p[next2]];
 		//-----------------------------------//
-		if (-epsilon > ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x))) { goto Label; }
+		float calc = ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x));
+		if (-epsilon > calc) { goto Label; }
 		else {
 			for (unsigned int i = 0; i != n; ++i) {
 				if ((i != p[start]) && (i != p[next]) && (i != p[next2])) {

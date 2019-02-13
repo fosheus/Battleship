@@ -28,7 +28,9 @@
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
+    <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
+    <ClCompile Include="PolygonPointSorter.cpp" />
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="SplashState.cpp" />
     <ClCompile Include="StateMachine.cpp" />
@@ -43,7 +45,9 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="MainMenuState.h" />
+    <ClInclude Include="MapGenerator.h" />
     <ClInclude Include="PerlinNoise.h" />
+    <ClInclude Include="PolygonPointSorter.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="SplashState.h" />
     <ClInclude Include="State.h" />

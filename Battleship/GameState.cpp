@@ -2,18 +2,27 @@
 #include "DEFINITIONS.h"
 #include "MainMenuState.h"
 #include "PerlinNoise.h"
-
+#include <functional>
 
 GameState::GameState(GameDataRef data) :_data(data),shape(sf::Color::Red)
 {
 	
 }
 
+void triangulatePolygon(ConcaveShape &shape,int i,int size)
+{
+	sf::Clock one;
+	one.restart();
+	shape.Triangulate();
+	std::cout << i << "/" << size << " size = " <<shape.getPoints().size() << " time=" << one.getElapsedTime().asSeconds() << std::endl;
+	
+}
+
 void GameState::Init()
 {
-	this->_background.setTexture(this->_data->assets.GetImage(GAME_STATE_BACKGROUND_FILEPATH));
-	this->_background.setPosition(this->_data->window.getSize().x / 2 - this->_background.getGlobalBounds().width / 2, this->_data->window.getSize().y / 2 - this->_background.getGlobalBounds().height / 2);
-	
+	this->_background.setFillColor(sf::Color::Blue);
+	this->_background.setSize(sf::Vector2f(256*16, 256 * 16));
+
 	this->velocity.setFont(this->_data->assets.GetFont("fonts/basic_font.ttf"));
 	this->rotation.setFont(this->_data->assets.GetFont("fonts/basic_font.ttf"));
 	this->position.setFont(this->_data->assets.GetFont("fonts/basic_font.ttf"));
@@ -40,67 +49,65 @@ void GameState::Init()
 	zoomFactor = 1.0f;
 	this->mouseLeftClicked = false;
 
-	/*shape.addPoint(sf::Vector2f(15, 11));
-	shape.addPoint(sf::Vector2f(30, 15));
-	shape.addPoint(sf::Vector2f(35, 28));
-	shape.addPoint(sf::Vector2f(27, 32));
-	shape.addPoint(sf::Vector2f(30, 45));
-	shape.addPoint(sf::Vector2f(20, 50));
-	shape.addPoint(sf::Vector2f(15, 38));
-	shape.addPoint(sf::Vector2f(2, 31));
-	shape.addPoint(sf::Vector2f(15, 25));
-	shape.addPoint(sf::Vector2f(15, 19));
-	shape.Triangulate();*/
-
-	PerlinNoise::SetupPerlinNoise(&fNoiseSeed2D, &fPerlinNoise2D, arraySize, arraySize);
-
-	PerlinNoise::PerlinNoise2D(arraySize, arraySize, fNoiseSeed2D, nOctaveCount, fScalingBias, fPerlinNoise2D);
-
-
-	vertices.resize(arraySize *arraySize* 4);
-	vertices.setPrimitiveType(sf::Quads);
 	
 
-	for (int x = 0; x < arraySize; x++)
+	mapGenerator.generate();
+	islands.clear();
+	beaches.clear();
+	int max_size = 0;
+	int max_elem = 0;
+	for (size_t i = 0; i < mapGenerator.beaches.size(); i++)
 	{
-		for (int y = 0; y < arraySize; y++)
+		if (max_size < mapGenerator.beaches[i].size()) {
+			max_size = mapGenerator.beaches[i].size();
+			max_elem = i;
+		}
+		beaches.push_back(ConcaveShape());
+		for (size_t j = 0; j < mapGenerator.beaches[i].size(); j++)
 		{
-			sf::Vertex* vertex = &vertices[(x + y * arraySize) * 4];
-			int tileNumber = (int)(fPerlinNoise2D[y * arraySize + x] * 12.0f);
-
-			vertex[0].position = sf::Vector2f(x*16, y*16);
-			vertex[1].position = sf::Vector2f((x+1)*16, y*16);
-			vertex[2].position = sf::Vector2f((x+1)*16, (y+1)*16);
-			vertex[3].position = sf::Vector2f(x*16, (y+1)*16);
-
-			switch (tileNumber)
-			{
-			case 9:
-				vertex[0].color = sf::Color::Yellow;
-				vertex[1].color = sf::Color::Yellow;
-				vertex[2].color = sf::Color::Yellow;
-				vertex[3].color = sf::Color::Yellow;
-				break;
-			case 10:
-			case 11:
-			case 12:
-				vertex[0].color = sf::Color::Green;
-				vertex[1].color = sf::Color::Green;
-				vertex[2].color = sf::Color::Green;
-				vertex[3].color = sf::Color::Green;
-				break;
-			default:
-				vertex[0].color = sf::Color::Blue;
-				vertex[1].color = sf::Color::Blue;
-				vertex[2].color = sf::Color::Blue;
-				vertex[3].color = sf::Color::Blue;
-				break;
-			}
+			sf::Vector2f point(mapGenerator.beaches[i][j].x*16, mapGenerator.beaches[i][j].y*16);
+			beaches[beaches.size() - 1].addPoint(point);
+			points.push_back(point);
 		}
 	}
 
+	for (size_t i = 0; i < mapGenerator.islands.size(); i++)
+	{
+		islands.push_back(ConcaveShape());
+		ConcaveShape & current = islands[islands.size()-1];
+		for (size_t j = 0; j < mapGenerator.islands[i].size(); j++)
+		{
+			sf::Vector2f point(mapGenerator.islands[i][j].x*16, mapGenerator.islands[i][j].y*16);
+			current.addPoint(point);
+			points.push_back(point);
+		}
+		
 
-	
+	}
+	std::cout << points.size() << std::endl;
+	std::cout << beaches.size() << std::endl;
+	sf::Clock clock;
+	sf::Clock one;
+	for (int i = 0; i < islands.size(); i++) {
+		//distance first last
+		sf::Vector2f start = islands[i].getPoints()[0];
+		sf::Vector2f last = islands[i].getPoints()[islands[i].getPoints().size()-1];
+
+		//float distance = sqrt((last.x - start.x)*(last.x - start.x) - (last.y - start.y)*(last.y - start.y));
+		//if (distance < 3) {
+			/*threads.push_back(new sf::Thread(std::bind(triangulatePolygon, beaches[i], i, beaches.size())));
+			threads[threads.size() - 1]->launch();*/
+			sf::Clock one;
+			one.restart();
+			islands[i].Triangulate();
+			std::cout << i << "/" << islands.size() << " size = " << islands[i].getPoints().size() << " time=" << one.getElapsedTime().asSeconds() << std::endl;
+		//}
+	}
+	std::cout << clock.getElapsedTime().asSeconds() << std::endl;
+	for (int i = 0; i < threads.size(); i++) {
+		threads[i]->wait();
+		delete threads[i];
+	}
 
 }
 
@@ -174,9 +181,6 @@ void GameState::Update(float dt)
 	this->rotation.setString("rotation:" + std::to_string(ship.getCurrentRotation()) + " => " + std::to_string(ship.getTargetRotation()));
 	this->angle.setString("angle:" + std::to_string(ship.getAngle()));
 
-	/*shape.setPosition(sf::Vector2f(shape.getPosition().x+2, shape.getPosition().y+1));
-	shape.Triangulate();
-	*/
 }
 
 void GameState::Draw(float dt)
@@ -192,7 +196,39 @@ void GameState::Draw(float dt)
 	rect.setPosition(ship.getPosition());
 	rect.setFillColor(sf::Color::Green);
 	rect.setRotation(ship.getAngle());	
-	this->_data->window.draw(vertices);
+
+	for (size_t i = 0; i < points.size(); i++)
+	{
+		
+	}
+	sf::RectangleShape r;
+	r.setSize(sf::Vector2f(16, 16));
+	r.setFillColor(sf::Color::Yellow);
+
+	for (size_t i = 0; i < islands.size(); i++)
+	{
+		/*this->_data->window.draw(islands[i]);
+		sf::CircleShape c;
+		c.setRadius(5);
+		c.setOrigin(5, 5);
+		for (int j = 0; j < islands[i].getPoints().size(); j++) {
+			c.setFillColor(sf::Color(255*j/ islands[i].getPoints().size(),0, 255 *  islands[i].getPoints().size()/(j+1)));
+			c.setPosition(islands[i].getPoints()[j]);
+			this->_data->window.draw(c);
+
+		}*/
+		for (int j = 0; j < islands[i].getPoints().size(); j++) {
+			r.setPosition(islands[i].getPoints()[j]);
+			this->_data->window.draw(r);
+
+		}
+		
+
+	}
+	/*for (size_t i = 0; i < islands.size(); i++)
+	{
+		this->_data->window.draw(islands[i]);
+	}*/
 	this->_data->window.draw(rect);
 	this->_data->window.setView(this->_data->window.getDefaultView());
 
@@ -204,4 +240,5 @@ void GameState::Draw(float dt)
 	this->_data->window.draw(shape);
 	this->_data->window.display();
 }
+
 

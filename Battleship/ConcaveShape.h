@@ -24,6 +24,7 @@ public:
 	void Triangulate();
 	void setColor(sf::Color c);
 	void setTexture(const sf::Texture& t);
+	std::vector<sf::Vector2f>& getPoints() { return points; }
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
 	{
 		states.texture = texture;

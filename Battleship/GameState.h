@@ -8,6 +8,7 @@
 
 #include "Ship.h"
 #include "ConcaveShape.h"
+#include "MapGenerator.h"
 
 class GameState : public State
 {
@@ -20,12 +21,14 @@ public:
 	void Update(float dt);
 	void Draw(float dt);
 
+private :
+	friend void triangulatePolygon(ConcaveShape& shape, int i, int size);
 private:
 	GameDataRef _data;
 	sf::View gameView;
 	sf::Clock _clock;
 
-	sf::Sprite _background;
+	sf::RectangleShape _background;
 	sf::Text velocity;
 	sf::Text rotation;
 	sf::Text position;
@@ -37,12 +40,13 @@ private:
 	float zoomFactor;
 
 	ConcaveShape shape;
+	std::vector<ConcaveShape> islands;
+	std::vector<sf::Thread*> threads;
 
-	float *fNoiseSeed2D = nullptr;
-	float *fPerlinNoise2D = nullptr;
-	int arraySize = 512;
-	int nOctaveCount = 5;
-	float fScalingBias = 0.4f;
+	std::vector<ConcaveShape> beaches;
+	std::vector<sf::Vector2f> points;
+
+	MapGenerator mapGenerator;
 
 	sf::VertexArray vertices;
 

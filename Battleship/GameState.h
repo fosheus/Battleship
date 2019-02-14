@@ -22,7 +22,14 @@ public:
 	void Draw(float dt);
 
 private :
-	friend void triangulatePolygon(ConcaveShape& shape, int i, int size);
+	void initGUI();
+	void initEntities();
+	void initWalls();
+	int pnpoly(std::vector<sf::Vector2f>& points,sf::Vector2f testPoint);
+	bool rectanglesCollide(std::vector<sf::Vector2f>& rect1, std::vector<sf::Vector2f>& rect2);
+	void manageInputGameView(sf::Event& event);
+	void manageInputShipMouvement(sf::Event &event);
+
 private:
 	GameDataRef _data;
 	sf::View gameView;
@@ -39,19 +46,13 @@ private:
 	bool mouseLeftClicked;
 	float zoomFactor;
 
-	ConcaveShape shape;
-	std::vector<ConcaveShape> islands;
-	std::vector<sf::Thread*> threads;
-
-	std::vector<ConcaveShape> beaches;
-	std::vector<sf::Vector2f> points;
-
 	MapGenerator mapGenerator;
 
 	sf::VertexArray vertices;
-
+	sf::RenderTexture wallsTexture;
 	sf::Clock fpsClock;
 
+	std::vector<sf::RectangleShape> walls;
 
 
 };

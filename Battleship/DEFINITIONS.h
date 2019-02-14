@@ -1,8 +1,8 @@
 #pragma once
 
 
-#define SCREEN_WIDTH 1280
-#define SCREEN_HEIGHT 720
+#define SCREEN_WIDTH 1920
+#define SCREEN_HEIGHT 1080
 
 
 #define SPLASH_SCREEN_TIME_SHOW 0.5f
@@ -14,3 +14,6 @@
 #define MAIN_MENU_PLAY_BUTTON "images/main_menu_play_button.png"
 #define MAIN_MENU_EXIT_BUTTON "images/main_menu_exit_button.png"
 
+#define ARRAY_SIZE 256
+#define WALL_SIZE 16
+#define SHIP_ACCELERATION 1.0f

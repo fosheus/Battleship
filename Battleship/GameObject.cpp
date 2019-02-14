@@ -4,14 +4,16 @@
 GameObject::GameObject()
 {
 	angle = 0;
-	position = sf::Vector2f(0, 0);
+	setPosition(sf::Vector2f(0, 0));
+	
 	acceleration = 0.2f;
+	maxVelocity = 100.0f;
 
 }
 
 void GameObject::update(float multiplier)
 {
-	
+		
 	if (targetVelocity > velocity) {
 		velocity += acceleration*multiplier;
 		if (targetVelocity < velocity) {
@@ -26,27 +28,46 @@ void GameObject::update(float multiplier)
 	}
 
 	
-	position.x = position.x + velocity * cos(angle*3.14159 / 180)*multiplier;
-	position.y = position.y + velocity * sin(angle*3.14159 / 180)*multiplier;
+	position.x = position.x + velocity * cos(angle*3.14159 / 180.0f)*multiplier;
+	position.y= position.y + velocity * sin(angle*3.14159 / 180.0f)*multiplier;
 	
 	
 }
 
 void GameObject::addVelocity(float velocityOffset)
 {
+	
 	targetVelocity += velocityOffset;
+	if (targetVelocity < 0.0f && targetVelocity < -maxVelocity) {
+		targetVelocity = -maxVelocity;
+	}
+	if (targetVelocity > 0.0f && targetVelocity > maxVelocity) {
+		targetVelocity = maxVelocity;
+	}
 }
 
 
 void GameObject::setVelocity(float velocity)
 {
-	targetVelocity = velocity;
+	this->velocity = velocity;
+	if (velocity < 0 && velocity < -maxVelocity) {
+		velocity = -maxVelocity;
+	}
+	if (velocity > 0 && velocity > maxVelocity) {
+		velocity = maxVelocity;
+	}
+}
+
+void GameObject::setMaxVelocity(float maxVelocity)
+{
+	this->maxVelocity = maxVelocity;
 }
 
 
 
 void GameObject::setAngle(float angle)
 {
+
 	this->angle = angle;
 	if (this->angle < -180) this->angle = this->angle + 360;
 	if (this->angle > 180) this->angle = this->angle - 360;
@@ -59,20 +80,19 @@ void GameObject::addAngle(float angleOffset)
 	if (this->angle > 180) this->angle = this->angle - 360;
 }
 
-void GameObject::setPosition(sf::Vector2f position)
-{
-	this->position = position;
-}
+
 
 void GameObject::setAcceleration(float acceleration)
 {
 	this->acceleration = acceleration;
 }
 
-sf::Vector2f GameObject::getPosition()
+void GameObject::setPosition(sf::Vector2f position)
 {
-	return position;
+	this->position = position;
 }
+
+
 
 float GameObject::getCurrentVelocity()
 {
@@ -93,6 +113,17 @@ float GameObject::getAcceleration()
 {
 	return acceleration;
 }
+
+float GameObject::getMaxVelocity()
+{
+	return maxVelocity;
+}
+
+sf::Vector2f GameObject::getPosition()
+{
+	return position;
+}
+
 
 
 GameObject::~GameObject()

@@ -106,6 +106,62 @@ void GameState::manageInputShipMouvement(sf::Event & event)
 	}
 }
 
+void GameState::checkTerrainCollision(float dt)
+{
+
+	bool shipCollidesWithBeach = false;
+	bool shipCollidesWithIsland = false;
+	sf::FloatRect rect = ship.getGlobalBounds();
+	std::vector<sf::Vector2f> shapePoints = ship.getPoints();
+	
+	for (sf::RectangleShape& r : beachBlocks) {
+		if (r.getGlobalBounds().intersects(rect)) {
+			std::vector<sf::Vector2f> rectPoints;
+			rectPoints.push_back(r.getPoint(0) + r.getPosition());
+			rectPoints.push_back(r.getPoint(2) + r.getPosition());
+			rectPoints.push_back(r.getPoint(1) + r.getPosition());
+			rectPoints.push_back(r.getPoint(3) + r.getPosition());
+			CollisionResponse collisionResponse = Collider::polygonesCollide(shapePoints, rectPoints);
+			if (collisionResponse.willIntersect) {
+				this->collisionResponse = collisionResponse;
+				sf::Vector2f oui(collisionResponse.collisionVector.x, collisionResponse.collisionVector.y);
+				std::cout << oui.x << " " << oui.y << std::endl;
+				ship.setPosition(ship.getPosition() + oui);
+
+			}
+		}
+	}
+
+	for (sf::RectangleShape& r : islandBlocks) {
+		if (r.getGlobalBounds().intersects(rect)) {
+			std::vector<sf::Vector2f> rectPoints;
+			rectPoints.push_back(r.getPoint(0) + r.getPosition());
+			rectPoints.push_back(r.getPoint(2) + r.getPosition());
+			rectPoints.push_back(r.getPoint(1) + r.getPosition());
+			rectPoints.push_back(r.getPoint(3) + r.getPosition());
+			/*if (rectanglesCollide(rectPoints, shapePoints)) {
+				//ship.rewindMovement(dt);
+				shipCollidesWithIsland = true;
+			}*/
+		}
+	}
+
+	if (shipCollidesWithBeach) {
+		ship.decelerate(5, 1, dt);
+	}
+	if (shipCollidesWithIsland) {
+		ship.setColor(sf::Color::Magenta);
+	}
+	else {
+		ship.setColor(sf::Color::Green);
+	}
+
+}
+
+void GameState::checkEntitiesCollision(float dt)
+{
+}
+
 void GameState::manageInputGameView(sf::Event & event)
 {
 	if (event.type == sf::Event::MouseButtonPressed) {
@@ -193,54 +249,16 @@ void GameState::HandleInput()
 void GameState::Update(float dt)
 {
 
-	bool shipCollidesWithBeach = false;
-	bool shipCollidesWithIsland = false;
+	
 	sf::Clock clocktest;
-	sf::FloatRect rect = ship.getGlobalBounds();
-	std::vector<sf::Vector2f> shapePoints = ship.getPoints();
+	
 	sf::Vector2f shipSnapshotPos = ship.getPosition();
 	ship.update(dt);
 
 
-	for (sf::RectangleShape& r : beachBlocks) {
-		if (r.getGlobalBounds().intersects(rect)) {
-			std::vector<sf::Vector2f> rectPoints;
-			rectPoints.push_back(r.getPoint(0) + r.getPosition());
-			rectPoints.push_back(r.getPoint(2) + r.getPosition());
-			rectPoints.push_back(r.getPoint(1) + r.getPosition());
-			rectPoints.push_back(r.getPoint(3) + r.getPosition());
-			CollisionResponse collisionResponse = Collider::polygonesCollide(shapePoints, rectPoints);
-			if (collisionResponse.collision) {
-				this->collisionResponse = collisionResponse;
-			}
-			
-		}
-	}
+	checkTerrainCollision(dt);
 
-	for (sf::RectangleShape& r : islandBlocks) {
-		if (r.getGlobalBounds().intersects(rect)) {
-			std::vector<sf::Vector2f> rectPoints;
-			rectPoints.push_back(r.getPoint(0) + r.getPosition());
-			rectPoints.push_back(r.getPoint(2) + r.getPosition());
-			rectPoints.push_back(r.getPoint(1) + r.getPosition());
-			rectPoints.push_back(r.getPoint(3) + r.getPosition());
-			/*if (rectanglesCollide(rectPoints, shapePoints)) {
-				//ship.rewindMovement(dt);
-				shipCollidesWithIsland = true;
-			}*/
-		}
-	}
-
-
-	if (shipCollidesWithBeach) {
-		ship.decelerate(5, 1, dt);
-	}
-	if (shipCollidesWithIsland) {
-		ship.setColor(sf::Color::Magenta);
-	}
-	else {
-		ship.setColor(sf::Color::Green);
-	}
+	
 
 
 	this->velocity.setString("velocity:" + std::to_string(ship.getCurrentVelocity()) + " => " + std::to_string(ship.getTargetVelocity()));
@@ -293,12 +311,12 @@ void GameState::Draw(float dt)
 	_data->window.draw(lines[2], 2, sf::PrimitiveType::Lines);
 	_data->window.draw(lines[3], 2, sf::PrimitiveType::Lines);
 
-	if (this->collisionResponse.collision) {
+	if (this->collisionResponse.willIntersect) {
 		sf::VertexArray varray;
 		varray.resize(2);
 		varray.setPrimitiveType(sf::Lines);
-		varray[0].position = this->collisionResponse.m;
-		varray[1].position = this->collisionResponse.m2;
+		varray[0].position = this->collisionResponse.m;//ship.getPosition();
+		varray[1].position = this->collisionResponse.m2; ship.getPosition()+this->collisionResponse.collisionVector;
 		varray[0].color = sf::Color::Black;
 		varray[1].color = sf::Color::Black;
 

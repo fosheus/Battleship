@@ -124,6 +124,11 @@ sf::Vector2f GameObject::getPosition()
 	return position;
 }
 
+sf::Vector2f GameObject::getVelocityVector()
+{
+	return sf::Vector2f(std::cos(angle*M_PI / 180.0f), std::sin(angle*M_PI / 180.0f));
+}
+
 
 
 GameObject::~GameObject()

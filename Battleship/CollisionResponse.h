@@ -4,7 +4,8 @@
 class CollisionResponse
 {
 public : 
-	bool collision;
+	bool willIntersect;
+	bool intersect;
 	sf::Vector2f collisionVector;
 	sf::Vector2f m;
 	sf::Vector2f m2;

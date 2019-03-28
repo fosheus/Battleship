@@ -1,9 +1,12 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 #include <math.h>
+
 
 class GameObject 
 {
@@ -25,6 +28,7 @@ public:
 	virtual float getAcceleration();
 	virtual float getMaxVelocity();
 	virtual sf::Vector2f getPosition();
+	virtual sf::Vector2f getVelocityVector();
 
 	~GameObject();
 

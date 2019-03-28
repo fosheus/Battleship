@@ -31,9 +31,11 @@ private :
 	void initGUI();
 	void initEntities();
 	void initWalls();
-	
+
 	void manageInputGameView(sf::Event& event);
 	void manageInputShipMouvement(sf::Event &event);
+	void checkTerrainCollision(float dt);
+	void checkEntitiesCollision(float dt);
 
 private:
 	GameDataRef _data;

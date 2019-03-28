@@ -9,12 +9,18 @@
 #include "Ship.h"
 #include "ConcaveShape.h"
 #include "MapGenerator.h"
+#include "Tile.h" 
+#include "IslandTile.h" 
+#include "WaterTile.h"
+#include "SandTile.h"
+#include "MapRenderer.h"
+#include "CollisionResponse.h"
 
 class GameState : public State
 {
 public:
 	GameState(GameDataRef data);
-	~GameState() {}
+	~GameState();
 
 	void Init();
 	void HandleInput();
@@ -25,8 +31,7 @@ private :
 	void initGUI();
 	void initEntities();
 	void initWalls();
-	int pnpoly(std::vector<sf::Vector2f>& points,sf::Vector2f testPoint);
-	bool rectanglesCollide(std::vector<sf::Vector2f>& rect1, std::vector<sf::Vector2f>& rect2);
+	
 	void manageInputGameView(sf::Event& event);
 	void manageInputShipMouvement(sf::Event &event);
 
@@ -46,13 +51,17 @@ private:
 	bool mouseLeftClicked;
 	float zoomFactor;
 
+	CollisionResponse collisionResponse;
+
 	MapGenerator mapGenerator;
+	MapRenderer* mapRenderer;
 
 	sf::VertexArray vertices;
 	sf::RenderTexture wallsTexture;
 	sf::Clock fpsClock;
 
-	std::vector<sf::RectangleShape> walls;
+	std::vector<sf::RectangleShape> beachBlocks;
+	std::vector<sf::RectangleShape> islandBlocks;
 
 
 };

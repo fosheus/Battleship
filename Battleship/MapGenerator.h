@@ -3,6 +3,8 @@
 #include <SFML/System/Vector2.hpp>
 #include "PerlinNoise.h"
 #include "DEFINITIONS.h"
+
+
 class MapGenerator
 {
 public :
@@ -21,8 +23,8 @@ private:
 	std::vector<std::vector<CellType>> matrix;
 public:
 	MapGenerator();
-	const std::vector<sf::Vector2i>& generate();
-	const std::vector<sf::Vector2i>& getWalls();
+	std::vector<std::vector<CellType>>& generate();
+	std::vector<sf::Vector2i>& getWalls();
 	/**
 	* Returns 1 if position is of type, 0 otherwise
 	* if position not in range, returns -1

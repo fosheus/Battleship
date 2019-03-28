@@ -54,7 +54,6 @@ sf::FloatRect Ship::getGlobalBounds()
 
 std::vector<sf::Vector2f> Ship::getPoints()
 {
-	
 	std::vector<sf::Vector2f> points;
 	
 	for (int i = 0; i < shape.getPointCount(); i++) {
@@ -105,6 +104,16 @@ void Ship::decelerate(float decelerateValue, float maxVelocity,float multiplier)
 	else if (getCurrentVelocity() <0 && getCurrentVelocity() <-maxVelocity)  {
 		setVelocity(getCurrentVelocity() + decelerateValue * multiplier);
 	}
+}
+
+void Ship::rewindMovement(float dt)
+{
+	setVelocity(-getCurrentVelocity());
+	setRotation(-getCurrentRotation());
+	this->update(dt);
+	setVelocity(-getCurrentVelocity());
+	setRotation(-getCurrentRotation());
+
 }
 
 void Ship::addVelocity(float velocityOffset)

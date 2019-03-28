@@ -9,7 +9,7 @@ MapGenerator::MapGenerator()
 {
 }
 
-const std::vector<sf::Vector2i>& MapGenerator::generate()
+std::vector<std::vector<MapGenerator::CellType>>& MapGenerator::generate()
 {
 	PerlinNoise::SetupPerlinNoise(&fNoiseSeed2D, &fPerlinNoise2D, ARRAY_SIZE, ARRAY_SIZE);
 
@@ -28,13 +28,13 @@ const std::vector<sf::Vector2i>& MapGenerator::generate()
 			{
 			case 9:
 				matrix[i][j] = BEACH;
-				walls.push_back(sf::Vector2i(i, j));
+				//walls.push_back(sf::Vector2i(i, j));
 				break;
 			case 10:
 			case 11:
 			case 12:
 				matrix[i][j] = ISLAND;
-				walls.push_back(sf::Vector2i(i, j));
+				//walls.push_back(sf::Vector2i(i, j));
 
 				break;
 			default:
@@ -43,12 +43,12 @@ const std::vector<sf::Vector2i>& MapGenerator::generate()
 			}
 		}
 	}
-	return walls;
+	return matrix;
 
 
 }
 
-const std::vector<sf::Vector2i>& MapGenerator::getWalls()
+std::vector<sf::Vector2i>& MapGenerator::getWalls()
 {
 	return walls;
 }

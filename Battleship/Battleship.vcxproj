@@ -21,37 +21,63 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="AssetManager.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="CollisionResponse.cpp" />
     <ClCompile Include="ConcaveShape.cpp" />
+    <ClCompile Include="EditorState.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameState.cpp" />
+    <ClCompile Include="ICollidable.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="IslandObstacle.cpp" />
+    <ClCompile Include="IslandTile.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainMenuState.cpp" />
     <ClCompile Include="MapGenerator.cpp" />
+    <ClCompile Include="MapRenderer.cpp" />
+    <ClCompile Include="Obstacle.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="PolygonPointSorter.cpp" />
+    <ClCompile Include="SandObstacle.cpp" />
+    <ClCompile Include="SandTile.cpp" />
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="SplashState.cpp" />
     <ClCompile Include="StateMachine.cpp" />
+    <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="WaterTile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="CollisionResponse.h" />
     <ClInclude Include="ConcaveShape.h" />
     <ClInclude Include="DEFINITIONS.h" />
+    <ClInclude Include="EditorState.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameState.h" />
+    <ClInclude Include="ICollidable.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="IslandObstacle.h" />
+    <ClInclude Include="IslandTile.h" />
     <ClInclude Include="MainMenuState.h" />
     <ClInclude Include="MapGenerator.h" />
+    <ClInclude Include="MapRenderer.h" />
+    <ClInclude Include="Obstacle.h" />
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="PolygonPointSorter.h" />
+    <ClInclude Include="SandObstacle.h" />
+    <ClInclude Include="SandTile.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="SplashState.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMachine.h" />
+    <ClInclude Include="Tile.h" />
+    <ClInclude Include="Utils.h" />
+    <ClInclude Include="WaterTile.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{74595B24-6288-4924-812C-D130ABC79719}</ProjectGuid>

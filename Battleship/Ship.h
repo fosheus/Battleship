@@ -21,7 +21,7 @@ public:
 	float getCurrentRotation();
 	float getTargetRotation();
 	void decelerate(float decelerateValue, float maxVelocity, float multiplier);
-
+	void rewindMovement(float dt);
 
 	//Accessors
 	virtual void addVelocity(float velocityOffset);
@@ -39,6 +39,10 @@ public:
 	virtual float getMaxVelocity();
 	virtual bool isBlocked();
 	virtual sf::Vector2f getSize();
+
+	void setColor(sf::Color color) { shape.setFillColor(color); }
+
+
 
 	
 

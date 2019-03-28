@@ -3,10 +3,17 @@
 #include "MainMenuState.h"
 #include "PerlinNoise.h"
 #include <functional>
+#include "Collider.h"
 
 GameState::GameState(GameDataRef data) :_data(data)
 {
 
+}
+
+GameState::~GameState()
+{
+
+	delete mapRenderer;
 }
 
 
@@ -51,40 +58,35 @@ void GameState::initEntities()
 
 void GameState::initWalls()
 {
-	const std::vector<sf::Vector2i>& mapWalls  = mapGenerator.generate();
+	std::vector<std::vector<MapGenerator::CellType>> cellType = mapGenerator.generate();
 	sf::RectangleShape r;
 	r.setFillColor(sf::Color::Yellow);
 	r.setSize(sf::Vector2f(WALL_SIZE, WALL_SIZE));
-	wallsTexture.create(WALL_SIZE*ARRAY_SIZE, WALL_SIZE*ARRAY_SIZE);
-	for (sf::Vector2i wall : mapWalls) {
-		r.setPosition(sf::Vector2f(wall.x * WALL_SIZE, wall.y * WALL_SIZE));
-		walls.push_back(r);
-		wallsTexture.draw(r);
-	}
-	wallsTexture.display();
-}
 
-int GameState::pnpoly(std::vector<sf::Vector2f>& points, sf::Vector2f testPoint)
-{
+	for (int i = 0; i < ARRAY_SIZE; i++) {
+		for (int j = 0; j < ARRAY_SIZE; j++) {
+			switch (cellType[i][j])
+			{
 
-	int i, j, c = 0;
-	for (i = 0, j = points.size() - 1; i < points.size(); j = i++) {
-		if (((points[i].y > testPoint.y) != (points[j].y > testPoint.y)) &&
-			(testPoint.x < (points[j].x - points[i].x) * (testPoint.y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
-			c = !c;
-	}
-	return c;
+			case MapGenerator::ISLAND:
+				r.setPosition(sf::Vector2f(i * WALL_SIZE, j * WALL_SIZE));
+				islandBlocks.push_back(r);
+				break;
 
-}
+			case MapGenerator::BEACH:
+				r.setPosition(sf::Vector2f(i * WALL_SIZE, j * WALL_SIZE));
+				beachBlocks.push_back(r);
+				break;
 
-bool GameState::rectanglesCollide(std::vector<sf::Vector2f>& rect1, std::vector<sf::Vector2f>& rect2) {
-	for (int i = 0; i < rect1.size(); i++) {
-		if (pnpoly(rect2, rect1[i])!=0) {
-			return true;
+			default:
+				break;
+			}
 		}
 	}
-	return false;
+	mapRenderer = new MapRenderer(cellType, _data->assets.GetImage("images/terrain.png"));
+
 }
+
 
 void GameState::manageInputShipMouvement(sf::Event & event)
 {
@@ -134,7 +136,7 @@ void GameState::manageInputGameView(sf::Event & event)
 		if (event.mouseWheelScroll.delta > 0) zoomFactor /= 2.0f;
 		else zoomFactor *= 2.0f;
 		gameView.setSize(SCREEN_WIDTH * zoomFactor, SCREEN_HEIGHT * zoomFactor);
-
+		std::cout << gameView.getSize().x << " " << gameView.getSize().y << std::endl;
 	}
 
 	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
@@ -142,16 +144,16 @@ void GameState::manageInputGameView(sf::Event & event)
 	}
 
 	int testZoom = 0;
-	if (gameView.getCenter().y - gameView.getSize().y / 2.0f< 0) {
+	if (gameView.getCenter().y - gameView.getSize().y / 2.0f < 0) {
 		gameView.setCenter(gameView.getCenter().x, gameView.getSize().y / 2.0f);
 		testZoom++;
 	}
 	if (gameView.getCenter().y + gameView.getSize().y / 2.0f > WALL_SIZE*ARRAY_SIZE) {
-		gameView.setCenter(gameView.getCenter().x, WALL_SIZE*ARRAY_SIZE- gameView.getSize().y / 2.0f);
+		gameView.setCenter(gameView.getCenter().x, WALL_SIZE*ARRAY_SIZE - gameView.getSize().y / 2.0f);
 		testZoom++;
 	}
-	
-	
+
+
 }
 
 
@@ -181,8 +183,8 @@ void GameState::HandleInput()
 		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
 			this->_data->machine.AddState(StateRef(new MainMenuState(this->_data)), true);
 		}
-		
-		
+
+
 		manageInputGameView(event);
 		manageInputShipMouvement(event);
 	}
@@ -191,28 +193,54 @@ void GameState::HandleInput()
 void GameState::Update(float dt)
 {
 
-	bool shipCollidesWithWall = false;
+	bool shipCollidesWithBeach = false;
+	bool shipCollidesWithIsland = false;
 	sf::Clock clocktest;
 	sf::FloatRect rect = ship.getGlobalBounds();
 	std::vector<sf::Vector2f> shapePoints = ship.getPoints();
+	sf::Vector2f shipSnapshotPos = ship.getPosition();
+	ship.update(dt);
 
-	for (sf::RectangleShape& r : walls) {
+
+	for (sf::RectangleShape& r : beachBlocks) {
 		if (r.getGlobalBounds().intersects(rect)) {
 			std::vector<sf::Vector2f> rectPoints;
-			rectPoints.push_back(r.getPoint(0)+r.getPosition());
-			rectPoints.push_back(r.getPoint(1) + r.getPosition());
+			rectPoints.push_back(r.getPoint(0) + r.getPosition());
 			rectPoints.push_back(r.getPoint(2) + r.getPosition());
+			rectPoints.push_back(r.getPoint(1) + r.getPosition());
 			rectPoints.push_back(r.getPoint(3) + r.getPosition());
-			if (rectanglesCollide(rectPoints, shapePoints)) {
-				shipCollidesWithWall = true;
+			CollisionResponse collisionResponse = Collider::polygonesCollide(shapePoints, rectPoints);
+			if (collisionResponse.collision) {
+				this->collisionResponse = collisionResponse;
 			}
+			
 		}
 	}
-	if (shipCollidesWithWall) {
+
+	for (sf::RectangleShape& r : islandBlocks) {
+		if (r.getGlobalBounds().intersects(rect)) {
+			std::vector<sf::Vector2f> rectPoints;
+			rectPoints.push_back(r.getPoint(0) + r.getPosition());
+			rectPoints.push_back(r.getPoint(2) + r.getPosition());
+			rectPoints.push_back(r.getPoint(1) + r.getPosition());
+			rectPoints.push_back(r.getPoint(3) + r.getPosition());
+			/*if (rectanglesCollide(rectPoints, shapePoints)) {
+				//ship.rewindMovement(dt);
+				shipCollidesWithIsland = true;
+			}*/
+		}
+	}
+
+
+	if (shipCollidesWithBeach) {
 		ship.decelerate(5, 1, dt);
 	}
-	
-	ship.update(dt);
+	if (shipCollidesWithIsland) {
+		ship.setColor(sf::Color::Magenta);
+	}
+	else {
+		ship.setColor(sf::Color::Green);
+	}
 
 
 	this->velocity.setString("velocity:" + std::to_string(ship.getCurrentVelocity()) + " => " + std::to_string(ship.getTargetVelocity()));
@@ -228,8 +256,7 @@ void GameState::Draw(float dt)
 	this->_data->window.setView(gameView);
 	this->_data->window.clear();
 
-	//draw background
-	this->_data->window.draw(_background);
+	_data->window.draw(*mapRenderer);
 
 	//display walls
 	sf::Sprite wallsSprite;
@@ -251,14 +278,33 @@ void GameState::Draw(float dt)
 
 	//draw ship points
 	std::vector<sf::Vector2f> shapePoints = ship.getPoints();
-	sf::CircleShape c;
-	c.setRadius(10);
-	c.setOrigin(5,5);
-	c.setFillColor(sf::Color::Magenta);
-	for (sf::Vector2f p : shapePoints) {
-		c.setPosition(p);
-		_data->window.draw(c);
+	sf::Vertex lines[4][2];
+	lines[0][0].position = shapePoints[0];
+	lines[0][1].position = shapePoints[1];
+	lines[1][0].position = shapePoints[2];
+	lines[1][1].position = shapePoints[3];
+	lines[2][0].position = shapePoints[1];
+	lines[2][1].position = shapePoints[2];
+	lines[3][0].position = shapePoints[3];
+	lines[3][1].position = shapePoints[0];
+
+	_data->window.draw(lines[0], 2, sf::PrimitiveType::Lines);
+	_data->window.draw(lines[1], 2, sf::PrimitiveType::Lines);
+	_data->window.draw(lines[2], 2, sf::PrimitiveType::Lines);
+	_data->window.draw(lines[3], 2, sf::PrimitiveType::Lines);
+
+	if (this->collisionResponse.collision) {
+		sf::VertexArray varray;
+		varray.resize(2);
+		varray.setPrimitiveType(sf::Lines);
+		varray[0].position = this->collisionResponse.m;
+		varray[1].position = this->collisionResponse.m2;
+		varray[0].color = sf::Color::Black;
+		varray[1].color = sf::Color::Black;
+
+		_data->window.draw(varray);
 	}
+
 
 	this->_data->window.setView(this->_data->window.getDefaultView());
 

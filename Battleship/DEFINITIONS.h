@@ -14,6 +14,8 @@
 #define MAIN_MENU_PLAY_BUTTON "images/main_menu_play_button.png"
 #define MAIN_MENU_EXIT_BUTTON "images/main_menu_exit_button.png"
 
+#define TERRAIN_SPRTIESHEET "images/terrain_2.png"
+
 #define ARRAY_SIZE 256
 #define WALL_SIZE 16
 #define SHIP_ACCELERATION 1.0f

@@ -12,7 +12,10 @@ GameState::GameState(GameDataRef data) :_data(data)
 
 GameState::~GameState()
 {
-
+	for (size_t i = 0; i < terrain.size(); i++)
+	{
+		delete terrain[i];
+	}
 	delete mapRenderer;
 }
 
@@ -59,9 +62,6 @@ void GameState::initEntities()
 void GameState::initWalls()
 {
 	std::vector<std::vector<MapGenerator::CellType>> cellType = mapGenerator.generate();
-	sf::RectangleShape r;
-	r.setFillColor(sf::Color::Yellow);
-	r.setSize(sf::Vector2f(WALL_SIZE, WALL_SIZE));
 
 	for (int i = 0; i < ARRAY_SIZE; i++) {
 		for (int j = 0; j < ARRAY_SIZE; j++) {
@@ -69,13 +69,11 @@ void GameState::initWalls()
 			{
 
 			case MapGenerator::ISLAND:
-				r.setPosition(sf::Vector2f(i * WALL_SIZE, j * WALL_SIZE));
-				islandBlocks.push_back(r);
+				terrain.push_back(new IslandObstacle(sf::Vector2f(i*WALL_SIZE, j*WALL_SIZE), sf::Vector2f(WALL_SIZE, WALL_SIZE)));
 				break;
 
 			case MapGenerator::BEACH:
-				r.setPosition(sf::Vector2f(i * WALL_SIZE, j * WALL_SIZE));
-				beachBlocks.push_back(r);
+				terrain.push_back(new SandObstacle(sf::Vector2f(i*WALL_SIZE, j*WALL_SIZE), sf::Vector2f(WALL_SIZE, WALL_SIZE)));
 				break;
 
 			default:
@@ -83,7 +81,7 @@ void GameState::initWalls()
 			}
 		}
 	}
-	mapRenderer = new MapRenderer(cellType, _data->assets.GetImage("images/terrain.png"));
+	mapRenderer = new MapRenderer(cellType, _data->assets.GetImage(TERRAIN_SPRTIESHEET));
 
 }
 
@@ -106,61 +104,6 @@ void GameState::manageInputShipMouvement(sf::Event & event)
 	}
 }
 
-void GameState::checkTerrainCollision(float dt)
-{
-
-	bool shipCollidesWithBeach = false;
-	bool shipCollidesWithIsland = false;
-	sf::FloatRect rect = ship.getGlobalBounds();
-	std::vector<sf::Vector2f> shapePoints = ship.getPoints();
-	
-	for (sf::RectangleShape& r : beachBlocks) {
-		if (r.getGlobalBounds().intersects(rect)) {
-			std::vector<sf::Vector2f> rectPoints;
-			rectPoints.push_back(r.getPoint(0) + r.getPosition());
-			rectPoints.push_back(r.getPoint(2) + r.getPosition());
-			rectPoints.push_back(r.getPoint(1) + r.getPosition());
-			rectPoints.push_back(r.getPoint(3) + r.getPosition());
-			CollisionResponse collisionResponse = Collider::polygonesCollide(shapePoints, rectPoints);
-			if (collisionResponse.willIntersect) {
-				this->collisionResponse = collisionResponse;
-				sf::Vector2f oui(collisionResponse.collisionVector.x, collisionResponse.collisionVector.y);
-				std::cout << oui.x << " " << oui.y << std::endl;
-				ship.setPosition(ship.getPosition() + oui);
-
-			}
-		}
-	}
-
-	for (sf::RectangleShape& r : islandBlocks) {
-		if (r.getGlobalBounds().intersects(rect)) {
-			std::vector<sf::Vector2f> rectPoints;
-			rectPoints.push_back(r.getPoint(0) + r.getPosition());
-			rectPoints.push_back(r.getPoint(2) + r.getPosition());
-			rectPoints.push_back(r.getPoint(1) + r.getPosition());
-			rectPoints.push_back(r.getPoint(3) + r.getPosition());
-			/*if (rectanglesCollide(rectPoints, shapePoints)) {
-				//ship.rewindMovement(dt);
-				shipCollidesWithIsland = true;
-			}*/
-		}
-	}
-
-	if (shipCollidesWithBeach) {
-		ship.decelerate(5, 1, dt);
-	}
-	if (shipCollidesWithIsland) {
-		ship.setColor(sf::Color::Magenta);
-	}
-	else {
-		ship.setColor(sf::Color::Green);
-	}
-
-}
-
-void GameState::checkEntitiesCollision(float dt)
-{
-}
 
 void GameState::manageInputGameView(sf::Event & event)
 {
@@ -199,15 +142,13 @@ void GameState::manageInputGameView(sf::Event & event)
 		gameView.setCenter(ship.getPosition());
 	}
 
-	int testZoom = 0;
 	if (gameView.getCenter().y - gameView.getSize().y / 2.0f < 0) {
 		gameView.setCenter(gameView.getCenter().x, gameView.getSize().y / 2.0f);
-		testZoom++;
 	}
 	if (gameView.getCenter().y + gameView.getSize().y / 2.0f > WALL_SIZE*ARRAY_SIZE) {
 		gameView.setCenter(gameView.getCenter().x, WALL_SIZE*ARRAY_SIZE - gameView.getSize().y / 2.0f);
-		testZoom++;
 	}
+
 
 
 }
@@ -248,18 +189,9 @@ void GameState::HandleInput()
 
 void GameState::Update(float dt)
 {
-
-	
-	sf::Clock clocktest;
-	
-	sf::Vector2f shipSnapshotPos = ship.getPosition();
 	ship.update(dt);
-
-
 	checkTerrainCollision(dt);
-
-	
-
+	checkEntitiesCollision(dt);
 
 	this->velocity.setString("velocity:" + std::to_string(ship.getCurrentVelocity()) + " => " + std::to_string(ship.getTargetVelocity()));
 	this->position.setString("position:" + std::to_string(ship.getPosition().x) + ";" + std::to_string(ship.getPosition().y));
@@ -267,6 +199,35 @@ void GameState::Update(float dt)
 	this->angle.setString("angle:" + std::to_string(ship.getAngle()));
 
 }
+
+void GameState::checkTerrainCollision(float dt)
+{
+
+	bool shipCollidesWithBeach = false;
+	bool shipCollidesWithIsland = false;
+	sf::FloatRect rect = ship.getGlobalBounds();
+	std::vector<sf::Vector2f> shapePoints = ship.getPoints();
+
+	for (ICollidable* obstacle : terrain) {
+		if (obstacle != NULL) {
+			sf::FloatRect obstacleGlobalBounds = obstacle->getGlobalBounds();
+			if (obstacleGlobalBounds.intersects(rect)) {
+				std::vector<sf::Vector2f> obstaclePoints = obstacle->getPoints();
+				CollisionResponse collisionResponse = Collider::checkTerrainCollision(ship, *obstacle);
+				if (collisionResponse.intersect) {
+					ship.resolveCollision(*obstacle, collisionResponse);
+					this->collisionResponse = collisionResponse;
+				}
+			}
+		}
+	}
+
+}
+
+void GameState::checkEntitiesCollision(float dt)
+{
+}
+
 
 void GameState::Draw(float dt)
 {
@@ -311,19 +272,7 @@ void GameState::Draw(float dt)
 	_data->window.draw(lines[2], 2, sf::PrimitiveType::Lines);
 	_data->window.draw(lines[3], 2, sf::PrimitiveType::Lines);
 
-	if (this->collisionResponse.willIntersect) {
-		sf::VertexArray varray;
-		varray.resize(2);
-		varray.setPrimitiveType(sf::Lines);
-		varray[0].position = this->collisionResponse.m;//ship.getPosition();
-		varray[1].position = this->collisionResponse.m2; ship.getPosition()+this->collisionResponse.collisionVector;
-		varray[0].color = sf::Color::Black;
-		varray[1].color = sf::Color::Black;
-
-		_data->window.draw(varray);
-	}
-
-
+	
 	this->_data->window.setView(this->_data->window.getDefaultView());
 
 	//draw HUD

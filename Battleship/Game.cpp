@@ -3,8 +3,11 @@
 
 Game::Game(int width, int height, std::string title)
 {
-	this->_data->window.create(sf::VideoMode(width, height), title, sf::Style::Close | sf::Style::Titlebar);
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
+	this->_data->window.create(sf::VideoMode(width, height), title, sf::Style::Close | sf::Style::Titlebar,settings);
 	this->_data->window.setFramerateLimit(60);
+	 
 	this->_data->machine.AddState(StateRef(new SplashState(this->_data)));
 
 	this->Run();

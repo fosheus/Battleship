@@ -125,7 +125,7 @@ CollisionResponse Collider::checkEntitiesCollision(ICollidable& obj1, ICollidabl
 {
 	std::vector<sf::Vector2f> obj1Points = obj1.getPoints();
 	std::vector<sf::Vector2f> obj2Points = obj2.getPoints();
-	return polygonesCollide(obj1Points, obj2Points);
+	return polygonCollision(obj1Points, obj2Points,obj1.getVelocityVector()-obj2.getVelocityVector());
 
 }
 CollisionResponse Collider::checkTerrainCollision(ICollidable& obj1, ICollidable& obj2)
@@ -161,8 +161,6 @@ CollisionResponse Collider::polygonesCollide(std::vector<sf::Vector2f>& rect1, s
 			
 			sf::Vector2f collisionVector(0, 0);
 			sf::Vector2f collisionVectorTmp(0, 0);
-			sf::Vector2f M;
-			sf::Vector2f M2;
 			for (int j = 0; j < rect1.size(); j++) {
 				sf::Vector2f m = rect2[i];
 				sf::Vector2f p1 = rect1[j];
@@ -192,11 +190,9 @@ CollisionResponse Collider::polygonesCollide(std::vector<sf::Vector2f>& rect1, s
 				if (minDist > tmpDist && x >0 && y >0) {
 					minDist = tmpDist;
 					collisionVector = collisionVectorTmp;
-					M = m;
-					M2 = sf::Vector2f(x,y);
 				}
 			}
-			return CollisionResponse(true, collisionVector, M, M2);
+			return CollisionResponse(true, collisionVector);
 		}
 	}
 	return CollisionResponse();

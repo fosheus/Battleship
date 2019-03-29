@@ -5,7 +5,8 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include "GameObject.h"
-class Ship : public GameObject
+#include "ICollidable.h"
+class Ship : public GameObject ,public ICollidable
 {
 public:
 	Ship();
@@ -14,8 +15,10 @@ public:
 	void update(float multiplier);
 	void render(sf::RenderTarget* target);
 
-	sf::FloatRect getGlobalBounds();
-	std::vector<sf::Vector2f> getPoints();
+	virtual sf::FloatRect getGlobalBounds();
+	virtual std::vector<sf::Vector2f> getPoints();
+	virtual void resolveCollision(ICollidable & visitor, const CollisionResponse& collisionResponse) override;
+
 	void addRotation(float rotationOffset);
 	void setRotation(float rotation);
 	float getCurrentRotation();
@@ -41,11 +44,6 @@ public:
 	virtual sf::Vector2f getSize();
 
 	void setColor(sf::Color color) { shape.setFillColor(color); }
-
-
-
-	
-
 	~Ship();
 
 private:
@@ -60,6 +58,20 @@ private:
 	float maxRotation;
 	bool blocked;
 	float blockedTargetVelocity;
+
+
+	// Hérité via ICollidable
+	
+
+	virtual void resolveCollisionWithShip(Ship & ship, const CollisionResponse& collisionResponse) override;
+
+	virtual void resolveCollisionWithIsland(IslandObstacle & island, const CollisionResponse& collisionResponse) override;
+
+	virtual void resolveCollisionWithBeach(SandObstacle & beach, const CollisionResponse& collisionResponse) override;
+
+
+	// Hérité via ICollidable
+	virtual sf::Vector2f getVelocityVector() override;
 
 };
 

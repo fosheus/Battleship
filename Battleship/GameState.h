@@ -9,10 +9,9 @@
 #include "Ship.h"
 #include "ConcaveShape.h"
 #include "MapGenerator.h"
-#include "Tile.h" 
-#include "IslandTile.h" 
-#include "WaterTile.h"
-#include "SandTile.h"
+#include "Obstacle.h"
+#include "IslandObstacle.h"
+#include "SandObstacle.h"
 #include "MapRenderer.h"
 #include "CollisionResponse.h"
 
@@ -62,8 +61,9 @@ private:
 	sf::RenderTexture wallsTexture;
 	sf::Clock fpsClock;
 
-	std::vector<sf::RectangleShape> beachBlocks;
-	std::vector<sf::RectangleShape> islandBlocks;
+	/*std::vector<sf::RectangleShape> beachBlocks;
+	std::vector<sf::RectangleShape> islandBlocks;*/
+	std::vector<ICollidable*> terrain;
 
 
 };

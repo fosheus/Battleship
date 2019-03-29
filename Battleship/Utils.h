@@ -33,7 +33,7 @@ public:
 		double a = 0.0;  // Partial signed area
 
 		// For all vertices except last
-		int i = 0;
+		size_t i = 0;
 		for (i = 0; i < vertices.size() - 1; ++i)
 		{
 			x0 = vertices[i].x;

@@ -1,13 +1,14 @@
 #include "Obstacle.h"
 
 
-Obstacle::Obstacle(bool mouvable, sf::Vector2f position, sf::Vector2f size) : mouvable(mouvable)
+Obstacle::Obstacle(bool mouvable, sf::Vector2f position, sf::Vector2f size) : mouvable(mouvable),size(size)
 {
 	setPosition(position);
 	setAcceleration(0);
 	setAngle(0);
 	this->setMaxVelocity(0);
 	this->setVelocity(0);
+	
 }
 
 sf::FloatRect Obstacle::getGlobalBounds()
@@ -26,6 +27,11 @@ std::vector<sf::Vector2f> Obstacle::getPoints()
 	return points;
 }
 
+sf::Vector2f Obstacle::getVelocityVector()
+{
+	return sf::Vector2f(0,0);
+}
+
 sf::Vector2f Obstacle::getSize()
 {
 	return size;
@@ -35,18 +41,3 @@ Obstacle::~Obstacle()
 {
 }
 
-void Obstacle::resolveCollision(ICollidable & visitor)
-{
-}
-
-void Obstacle::resolveCollisionWithShip(Ship & ship)
-{
-}
-
-void Obstacle::resolveCollisionWithIsland(IslandObstacle & ship)
-{
-}
-
-void Obstacle::resolveCollisionWithBeach(SandObstacle & ship)
-{
-}

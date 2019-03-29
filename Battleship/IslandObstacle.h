@@ -8,7 +8,11 @@ public:
 	virtual ~IslandObstacle();
 private:
 
-	virtual void resolveCollision(ICollidable & visitor) override ;
-	virtual void resolveCollisionWithShip(Ship & ship) override ;
+	
+
+	// Hérité via Obstacle
+	virtual void resolveCollision(ICollidable & visitor, const CollisionResponse& collisionResponse) override;
+	virtual void resolveCollisionWithShip(Ship & ship, const CollisionResponse& collisionResponse) override;
+
 };
 

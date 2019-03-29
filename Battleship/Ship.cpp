@@ -12,6 +12,11 @@ Ship::Ship()
 	setSize(sf::Vector2f(201, 31), sf::Vector2f(100, 15));
 }
 void Ship::update(float multiplier) {
+
+
+	if (blocked) {
+		decelerate(5.0, 1, multiplier);
+	}
 	GameObject::update(multiplier);
 	if (getCurrentVelocity()>0.0f) {
 		if (targetRotation < rotation) {
@@ -32,6 +37,8 @@ void Ship::update(float multiplier) {
 	
 
 	updateShape();
+
+	blocked = false;
 }
 
 void Ship::render(sf::RenderTarget * target)
@@ -45,6 +52,32 @@ void Ship::updateShape()
 {
 	shape.setPosition(getPosition());
 	shape.setRotation(getAngle());
+}
+
+void Ship::resolveCollision(ICollidable & visitor, const CollisionResponse& collisionResponse)
+{
+	visitor.resolveCollisionWithShip(*this,collisionResponse);
+}
+
+void Ship::resolveCollisionWithShip(Ship & ship, const CollisionResponse& collisionResponse)
+{
+	ship.setPosition(ship.getPosition() - collisionResponse.collisionVector / 2.0f);
+	this->setPosition(this->getPosition() + collisionResponse.collisionVector / 2.0f);
+}
+
+void Ship::resolveCollisionWithIsland(IslandObstacle & island, const CollisionResponse& collisionResponse)
+{
+	this->setPosition(this->getPosition() + collisionResponse.collisionVector);
+}
+
+void Ship::resolveCollisionWithBeach(SandObstacle & ship, const CollisionResponse& collisionResponse)
+{
+	this->blocked = true;
+}
+
+sf::Vector2f Ship::getVelocityVector()
+{
+	return GameObject::getVelocityVector();
 }
 
 sf::FloatRect Ship::getGlobalBounds()
